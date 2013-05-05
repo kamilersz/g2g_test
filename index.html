@@ -6,7 +6,6 @@
     <title>Coup de Mojo Jojo</title>
     <link href="css/default.css" rel="stylesheet">
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-    <script src="js/pqueue.js"></script>
     <script>
 
 var rendererOptions = {
@@ -18,9 +17,10 @@ var map;
 
 var singapore = new google.maps.LatLng(1.22, 103.48);
 
-var places = [{location: 'changi airport'}, {location: 'Singapore 648886'}, {location: 'Singapore 467347'}, {location: 'Singapore 729826'}, {location: 'Singapore 098350'}, {location: 'Singapore 828868'}, {location: 'Singapore 018972'}];
+var places = [{location: 'Singapore 648886'}, {location: 'Singapore 467347'}, {location: 'Singapore 729826'}, {location: 'Singapore 098350'}, {location: 'Singapore 828868'}];
 var distances;
-var locations;
+var origin = 'changi airport';
+var destination = 'Singapore 018972';
 
 function createArray(length) {
     var arr = new Array(length || 0),
@@ -45,104 +45,22 @@ function initialize() {
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
   directionsDisplay.setMap(map);
 
-  //calcRoute();
-  initCalcDistances();
-}
-
-function initCalcDistances() {
-	locations = new Array(7);
-	distances = createArray(7,7);
-	i = 0;
-	j = 0;
-	k = 0;
-	do {
-		locations[i] = places[j];
-		i++;
-		j = (j + k + 1) % 7;
-		if (j == 0) {
-			i = 0;
-			calcDistance(locations.slice(),k);
-			k++;
-		}
-	} while (k < 6);
-	calculating = 0;
-	console.log(locations);
-}
-
-function calcDistance(locations,k) {
-  var request = {
-    origin: locations[0].location,
-    destination: locations[0].location,
-	waypoints: locations,
-    travelMode: google.maps.DirectionsTravelMode.DRIVING
-  };
-  console.log(locations);
-  directionsService.route(request, function(response, status) {
-    if (status == google.maps.DirectionsStatus.OK) {
-	  var myroute = response.routes[0];
-	  console.log(myroute);
-	  for (var i = 1; i < myroute.legs.length; i++) {
-		distances[((i-1)*(k+1))%7][(i*(k+1))%7] = myroute.legs[i].distance.value;
-		console.log(k + "," + i + ": " + myroute.legs[i].distance.value);
-	  }
-	  calculating += k + 1;
-	  if (calculating == 21)
-		calcPath();
-    }
-  });
-}
-
-function contains(arr,k) {
-    for(var p in arr)
-        if(arr[p] === k)
-            return true;
-    return false;
-}
-
-function calcPath() {
-	var init = new Array();
-	init.push(0);
-	var queue = PriorityQueue({low: true});
-	queue.push(init,0);
-	while (!queue.empty() && queue.top().object[queue.top().object.length-1] != 6) {
-		var path = queue.pop();
-		for(i =1; i <7; i++) {
-			//console.log('path ');
-			//console.log(path);
-			if (!contains(path.object,i) && !(i == 6 && path.object.length !=6)) {
-				var obj = path.object.slice();
-				var priority = path.priority;
-				//console.log('obj ');
-				//console.log(obj);
-				//console.log('hu ' + obj);
-				priority += distances[obj[obj.length-1]][i];
-				//console.log('ha');
-				obj.push(i);
-				//console.log('path obj ');
-				//console.log(obj);
-				queue.push(obj,priority);
-			}
-		}
-	}
-	console.log(queue.top().object);
-	locations = new Array(5);
-	for (i = 0; i<5; i++) {
-		locations[i] = places[queue.top().object[i+1]];
-	}
-	calcRoute();
+  calcRoute();
 }
 
 function calcRoute() {
 
   var request = {
-    origin: places[0].location,
-    destination: places[6].location,
-    waypoints:locations,
+    origin: origin,
+    destination: destination,
+	waypoints: places,
+	optimizeWaypoints: true,
     travelMode: google.maps.DirectionsTravelMode.DRIVING
   };
   directionsService.route(request, function(response, status) {
     if (status == google.maps.DirectionsStatus.OK) {
       directionsDisplay.setDirections(response);
+	  console.log(response);
     }
   });
 }
