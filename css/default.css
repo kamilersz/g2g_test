@@ -28,3 +28,13 @@ html, body {
   padding: 5px;
   border: 1px solid #999;
 }
+
+.info_content {
+	height: 18px;
+	font-size: 18px;
+}
+
+h2 {
+	font-size: 20px;
+	line-height: 20px;
+}
